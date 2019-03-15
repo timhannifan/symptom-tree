@@ -51,6 +51,23 @@ def count_attribute(df, column, value):
     return df[df[column] == value].count()
 
 
+# def populate_diagnoses:
+
+#### James's Code ###
+
+def encode_diagnoses(df, target):
+    '''
+    Add column to df with integers for target
+    '''
+    targets = df[target].unique()
+    codes = {}
+    for key, value in enumerate(targets):
+        codes[value] = key
+        df['unique_diagnosis'] = df[target].replace(codes)
+
+    return df, codes
+
+
 def split_attributes(df):
     #split dataset in features and target variable
     

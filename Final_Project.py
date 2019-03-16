@@ -35,18 +35,13 @@ def read_and_process_data(csv_file):
 
     df = pd.read_csv(csv_file, header=0, names=col_names, dtype=str)
     
-    bad_diagnoses = ["V990", "V991", "V992", "V997", "-9"]
+    bad_diagnoses = ["V990", "V991", "V992", "V997", "-9", "V99","V97"]
     df.query("DIAGNOSIS_LONG_1 not in @bad_diagnoses", inplace=True)
-    df.query("DIAGNOSIS_LONG_2 not in @bad_diagnoses", inplace=True)
-    df.query("DIAGNOSIS_LONG_3 not in @bad_diagnoses", inplace=True)
     df.query("DIAGNOSIS_SHORT_1 not in @bad_diagnoses", inplace=True)
-    df.query("DIAGNOSIS_SHORT_2 not in @bad_diagnoses", inplace=True)
-    df.query("DIAGNOSIS_SHORT_3 not in @bad_diagnoses", inplace=True)
 
-    bad_symptoms = ["Blank", "Genderal medical examination"]
+    bad_symptoms = ["Blank"]
     df.query("VISIT_REASON_1 not in @bad_symptoms", inplace=True)
-    df.query("VISIT_REASON_2 not in @bad_symptoms", inplace=True)
-    df.query("VISIT_REASON_3 not in @bad_symptoms", inplace=True)
+    df = df[~df["VISIT_REASON_1"].str.contains('examination')]
 
     bad_injury = ["Yes"]
     df.query("INJURY not in @bad_injury", inplace=True)
@@ -55,12 +50,15 @@ def read_and_process_data(csv_file):
     df.replace({"-9": np.nan, "Blank": np.nan}, inplace=True)
     df.replace(REPLACEMENT_DICT, inplace=True)
 
-    col_list = ['AGE', 'SEX', 'RACE_ETHNICITY', 'VISIT_REASON_1', 'DIAGNOSIS_LONG_1']
-    df = df[col_list]
-    df = df.iloc[0:1000,:] #Note, we will want to remove this
+    col_list = ['AGE', 'SEX', 'RACE_ETHNICITY', 'VISIT_REASON_1', 'DIAGNOSIS_SHORT_1']
+    # df = df[col_list]
+    df = df.iloc[0:100,:] #Note, we will want to remove this
 
-    df['DIAGNOSIS_LONG_1'] = df['DIAGNOSIS_LONG_1'].apply(lambda x: x.strip('-'))
-    df['DIAGNOSIS_LONG_1'] = df['DIAGNOSIS_LONG_1'].apply(lambda x: get_ICD.translate_code(x))
+    # df['DIAGNOSIS_LONG_1'] = df['DIAGNOSIS_LONG_1'].apply(lambda x: x.strip('-'))
+    # df['DIAGNOSIS_LONG_1'] = df['DIAGNOSIS_LONG_1'].apply(lambda x: get_ICD.translate_general(x))
+
+    df['DIAGNOSIS_SHORT_1'] = df['DIAGNOSIS_SHORT_1'].apply(lambda x: x.strip('-'))
+    df['DIAGNOSIS_SHORT_1'] = df['DIAGNOSIS_SHORT_1'].apply(lambda x: get_ICD.translate_general(x))
 
     return df
 
@@ -79,16 +77,20 @@ def count_attribute(df, column, value):
 #### James's Code ###
 def go(df): 
 
-    lst = [('AGE', 'AGE_CODE'),
-        ('SEX', 'SEX_CODE'),
-        ('RACE_ETHNICITY', 'RACE_ETHNICITY_CODE'),
-        ('VISIT_REASON_1', 'VISIT_REASON_1_CODE'),
-        ('DIAGNOSIS_LONG_1', 'DIAGNOSIS_LONG_1_CODE')]
+    # lst = [('AGE', 'AGE_CODE'),
+    #     ('SEX', 'SEX_CODE'),
+    #     ('RACE_ETHNICITY', 'RACE_ETHNICITY_CODE'),
+    #     ('VISIT_REASON_1', 'VISIT_REASON_1_CODE'),
+    #     ('DIAGNOSIS_SHORT_1', 'DIAGNOSIS_SHORT_1_CODE')]
 
-    for tup in lst:
+    # for tup in lst:
 
-        target, new_col = tup
-        df = encode_diagnoses(df, target, new_col)
+    #     target, new_col = tup
+    #     df = encode_diagnoses(df, target, new_col)
+
+    for col in df.columns:
+
+        df = encode_diagnoses(df, col, col + '_CODE')
 
     x, y = split_attributes(df)
 
@@ -101,7 +103,7 @@ def go(df):
 
 def encode_diagnoses(df, target, new_col):
     '''
-    Add column to df with integers for target
+    Add column to df with integers for target... need to access dictionary later
     '''
     targets = df[target].unique()
     codes = {}
@@ -117,7 +119,7 @@ def split_attributes(df):
     
     attributes = ['AGE_CODE', 'RACE_ETHNICITY_CODE', 'SEX_CODE', 'VISIT_REASON_1_CODE']
     x = df[attributes] # Things to split on
-    y = df['DIAGNOSIS_LONG_1_CODE'] # Target variable
+    y = df['DIAGNOSIS_SHORT_1_CODE'] # Target variable
     return x, y
 
 
@@ -130,7 +132,7 @@ def split_data(x, y):
 
 def model(x_train, y_train):
 
-    obj = DecisionTreeClassifier(criterion='entropy')
+    obj = DecisionTreeClassifier()
     trained_model = obj.fit(x_train, y_train)
     #prediction = trained_model.predict(x_test)
 

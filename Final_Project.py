@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import get_ICD
 from sklearn.tree import DecisionTreeClassifier # Import Decision Tree Classifier
 from sklearn.model_selection import train_test_split # Import train_test_split function
 from sklearn import metrics #Import scikit-learn metrics module for accuracy calculation
@@ -32,10 +33,19 @@ def read_and_process_data(csv_file):
                  'WEIGHT_POUNDS', 'TEMP_FAHRENHEIT', 'REGION', 'CENSUS_DIVISION',
                  'STATE']
 
+
     df = pd.read_csv(csv_file, header=0, names=col_names, dtype=str)
+    df = df[df.DIAGNOSIS_LONG_1 != '-9']
+    df = df.iloc[0:5000,:]
+
+    col_list = ['AGE', 'SEX', 'RACE_ETHNICITY', 'VISIT_REASON_1', 'DIAGNOSIS_LONG_1']
+    df = df[col_list]
+
+    df['DIAGNOSIS_LONG_1'] = df['DIAGNOSIS_LONG_1'].apply(lambda x: x.strip('-'))
+    df['DIAGNOSIS_LONG_1'] = df['DIAGNOSIS_LONG_1'].apply(lambda x: get_ICD.translate_code(x))
+        
     df.fillna(np.nan, inplace=True)
-    df.replace({"-9": np.nan, "Blank": np.nan, "Entire item blank":
-        np.nan}, inplace=True)
+    df.replace({"-9": np.nan, "Blank": np.nan}, inplace=True)
     df.replace(REPLACEMENT_DICT, inplace=True)
 
     return df
@@ -51,11 +61,31 @@ def count_attribute(df, column, value):
     return df[df[column] == value].count()
 
 
-# def populate_diagnoses:
 
 #### James's Code ###
+def go(df): 
 
-def encode_diagnoses(df, target):
+    lst = [('AGE', 'AGE_CODE'),
+        ('SEX', 'SEX_CODE'),
+        ('RACE_ETHNICITY', 'RACE_ETHNICITY_CODE'),
+        ('VISIT_REASON_1', 'VISIT_REASON_1_CODE'),
+        ('DIAGNOSIS_LONG_1', 'DIAGNOSIS_LONG_1_CODE')]
+
+    for tup in lst:
+
+        target, new_col = tup
+        df = encode_diagnoses(df, target, new_col)
+
+    x, y = split_attributes(df)
+
+    x_train, x_test, y_train, y_test = split_data(x, y)
+
+    trained = model(x_train, y_train)
+
+    return trained
+
+
+def encode_diagnoses(df, target, new_col):
     '''
     Add column to df with integers for target
     '''
@@ -63,17 +93,17 @@ def encode_diagnoses(df, target):
     codes = {}
     for key, value in enumerate(targets):
         codes[value] = key
-        df['unique_diagnosis'] = df[target].replace(codes)
+        df[new_col] = df[target].replace(codes)
 
-    return df, codes
+    return df 
 
 
 def split_attributes(df):
     #split dataset in features and target variable
     
-    attributes = ['AGE', 'RACE_ETHNICITY', 'VISIT_REASON_1']
+    attributes = ['AGE_CODE', 'RACE_ETHNICITY_CODE', 'SEX_CODE', 'VISIT_REASON_1_CODE']
     x = df[attributes] # Things to split on
-    y = df['DIAGNOSIS_SHORT_1'] # Target variable
+    y = df['DIAGNOSIS_LONG_1_CODE'] # Target variable
     return x, y
 
 
@@ -86,11 +116,11 @@ def split_data(x, y):
 
 def model(x_train, y_train):
 
-    obj = DecisionTreeClassifier()
+    obj = DecisionTreeClassifier(criterion='entropy')
     trained_model = obj.fit(x_train, y_train)
-    prediction = trained_model.predict(x_test)
+    #prediction = trained_model.predict(x_test)
 
-    return prediction
+    return trained_model
 
 
 # Defined constants for column names

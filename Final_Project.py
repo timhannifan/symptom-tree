@@ -89,8 +89,9 @@ def go(df):
     #     df = encode_diagnoses(df, target, new_col)
 
     for col in df.columns:
-
-        df = encode_diagnoses(df, col, col + '_CODE')
+    
+        df = encode_diagnoses(df, col, col)
+        # df = encode_diagnoses(df, col, col + '_CODE')
 
     x, y = split_attributes(df)
 

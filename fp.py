@@ -23,7 +23,12 @@ def encode_diagnoses(df, target, new_col):
     '''
     Add column to df with integers for target... need to access dictionary
     later.
+    Input:
+        df (pandas df): containing predictor and target columns
+    Output:
+        Returns a tuple of dataframes
     '''
+
     targets = df[target].unique()
     codes = {}
     for key, value in enumerate(targets):
@@ -47,6 +52,7 @@ def split_attributes(df):
     y = df.loc[:, DIAGNOSIS_CAT_COL]
 
     return x, y
+
 
 def go():
     '''

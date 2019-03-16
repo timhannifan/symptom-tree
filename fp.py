@@ -61,7 +61,7 @@ def go():
     Output:
         Returns a tuple containing the trained model and diagnosis map
     '''
-    df = pd.read_csv('cleaned.csv')
+    df = process.read_and_process_data()
     df = df.loc[:, KEEP_COLS]
     df2 = df.copy()
     df2, d_map = encode_diagnoses(df, DIAGNOSIS_COL, DIAGNOSIS_CAT_COL)
@@ -73,7 +73,7 @@ def go():
     y_pred = trained.predict(x_test)
     # test_pca(x_train, x_test)
 
-    print("Accuracy:",metrics.accuracy_score(y_test, y_pred))
+    print("Accuracy:", accuracy_score(y_test, y_pred))
     return (trained, d_map)
 
 

@@ -7,8 +7,8 @@ import numpy as np
 import json
 
 DIAGNOSIS_PATH = "data/icd_codes.json"
-INPUT_FNAME = 'data/d_small.csv'
-OUTPUT_FNAME = 'cleaned_small.csv'
+INPUT_FNAME = 'data/d.csv'
+OUTPUT_FNAME = 'cleaned.csv'
 
 REPLACEMENT_DICT = {'AGE': {
                         "92 years or older": "92",
@@ -37,7 +37,7 @@ COL_NAMES = ['AGE', 'AGE_CAT', 'SEX', 'PREGNANT', 'RACE_ETHNICITY',
              'WEIGHT_POUNDS', 'TEMP_FAHRENHEIT', 'REGION',
              'CENSUS_DIVISION','STATE']
 
-BAD_DIAGNOSES = ["V990", "V991", "V992", "V997", "-9", "V99","V97",np.nan]
+BAD_DIAGNOSES = ["V990","V990-", "V991", "V992", "V997", "-9", "V99","V97",np.nan]
 BAD_INJURY = ["Yes"]
 BAD_SYMPTOMS = ["Blank"]
 
@@ -65,7 +65,7 @@ def read_and_process_data():
     df = pd.read_csv(INPUT_FNAME, header=0, names=COL_NAMES, dtype=str)
 
     df.query("DIAGNOSIS_LONG_1 not in @BAD_DIAGNOSES", inplace=True)
-    df.query("DIAGNOSIS_SHORT_1 not in @bad_diagnoses", inplace=True)
+    df.query("DIAGNOSIS_SHORT_1 not in @BAD_DIAGNOSES", inplace=True)
     df.query("VISIT_REASON_1 not in @BAD_SYMPTOMS", inplace=True)
     df.query("INJURY not in @BAD_INJURY", inplace=True)
     df = df[~df["VISIT_REASON_1"].str.contains('examination')]

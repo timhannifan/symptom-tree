@@ -6,7 +6,8 @@ import bs4
 
 
 BASE = 'https://icdcodelookup.com/icd-10/codes/'
-BASE_GEN = 'http://icd9.chrisendres.com/index.php?srchtype=diseases&srchtext='
+# BASE_GEN = 'http://icd9.chrisendres.com/index.php?srchtype=diseases&srchtext='
+BASE_GEN = 'https://www.icd10data.com/search?s='
 COUNT = 0
 
 
@@ -34,13 +35,21 @@ def translate_code(code):
 
 def translate_general(code):
 
-	url = BASE_GEN + str(code) + '&Submit=Search&action=search'
+	# url = BASE_GEN + str(code) + '&Submit=Search&action=search'
+	url = BASE_GEN + str(code) + '&codebook=icd9volume1'
 	ro = util.get_request(url)
 	html = util.read_request(ro)
 	soup = bs4.BeautifulSoup(html, "html5lib")
-	txt = soup.find('div', class_='dlvl').text 
+	# txt = soup.find('div', class_='dlvl')
 
-	return txt
+	rv = soup.find('div').next_sibling.next_sibling.find('div', class_='searchPadded')
+
+	if not rv:
+		print(code)
+	else:
+		rv = rv.text
+
+	return rv
 
 
 # top['DIAG1'] = top['DIAG1'].apply(lambda x: get_ICD.translate_code(x))

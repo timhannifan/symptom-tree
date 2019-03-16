@@ -33,20 +33,34 @@ def read_and_process_data(csv_file):
                  'WEIGHT_POUNDS', 'TEMP_FAHRENHEIT', 'REGION', 'CENSUS_DIVISION',
                  'STATE']
 
-
     df = pd.read_csv(csv_file, header=0, names=col_names, dtype=str)
-    df = df[df.DIAGNOSIS_LONG_1 != '-9']
-    df = df.iloc[0:5000,:]
+    
+    bad_diagnoses = ["V990", "V991", "V992", "V997", "-9"]
+    df.query("DIAGNOSIS_LONG_1 not in @bad_diagnoses", inplace=True)
+    df.query("DIAGNOSIS_LONG_2 not in @bad_diagnoses", inplace=True)
+    df.query("DIAGNOSIS_LONG_3 not in @bad_diagnoses", inplace=True)
+    df.query("DIAGNOSIS_SHORT_1 not in @bad_diagnoses", inplace=True)
+    df.query("DIAGNOSIS_SHORT_2 not in @bad_diagnoses", inplace=True)
+    df.query("DIAGNOSIS_SHORT_3 not in @bad_diagnoses", inplace=True)
 
-    col_list = ['AGE', 'SEX', 'RACE_ETHNICITY', 'VISIT_REASON_1', 'DIAGNOSIS_LONG_1']
-    df = df[col_list]
+    bad_symptoms = ["Blank", "Genderal medical examination"]
+    df.query("VISIT_REASON_1 not in @bad_symptoms", inplace=True)
+    df.query("VISIT_REASON_2 not in @bad_symptoms", inplace=True)
+    df.query("VISIT_REASON_3 not in @bad_symptoms", inplace=True)
 
-    df['DIAGNOSIS_LONG_1'] = df['DIAGNOSIS_LONG_1'].apply(lambda x: x.strip('-'))
-    df['DIAGNOSIS_LONG_1'] = df['DIAGNOSIS_LONG_1'].apply(lambda x: get_ICD.translate_code(x))
-        
+    bad_injury = ["Yes"]
+    df.query("INJURY not in @bad_injury", inplace=True)
+    
     df.fillna(np.nan, inplace=True)
     df.replace({"-9": np.nan, "Blank": np.nan}, inplace=True)
     df.replace(REPLACEMENT_DICT, inplace=True)
+
+    col_list = ['AGE', 'SEX', 'RACE_ETHNICITY', 'VISIT_REASON_1', 'DIAGNOSIS_LONG_1']
+    df = df[col_list]
+    df = df.iloc[0:1000,:] #Note, we will want to remove this
+
+    df['DIAGNOSIS_LONG_1'] = df['DIAGNOSIS_LONG_1'].apply(lambda x: x.strip('-'))
+    df['DIAGNOSIS_LONG_1'] = df['DIAGNOSIS_LONG_1'].apply(lambda x: get_ICD.translate_code(x))
 
     return df
 

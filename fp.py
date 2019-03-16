@@ -135,6 +135,6 @@ def model(x_train, y_train):
 
     return trained_model
 
-# if __name__ == "__main__":
-    # df = read_and_process_data('data/cdc_2012_2016_clean.csv')
-    # return go(df)
+if __name__ == "__main__":
+
+    go(sys.argv)

@@ -42,7 +42,7 @@ def get_data(path):
     df = process.read_and_process_data(path)
     df = df.loc[:, KEEP_COLS]
     df2 = df.copy()
-    df2, d_map = fp.encode_diagnoses(df, DIAGNOSIS_COL, DIAGNOSIS_CAT_COL)
+    df2, d_map = fp.encode_diagnoses(df2, DIAGNOSIS_COL, DIAGNOSIS_CAT_COL)
     df2 = pd.get_dummies(df2, columns=DUMMY_COLS, prefix=PREFIX_COLS)
 
     return (df2, d_map)

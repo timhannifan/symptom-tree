@@ -31,11 +31,13 @@ def encode_diagnoses(df, target, new_col):
 
     targets = df[target].unique()
     codes = {}
+    reverse = {}
     for key, value in enumerate(targets):
         codes[value] = key
+        reverse[key] = value
         df[new_col] = df[target].replace(codes)
 
-    return (df, codes)
+    return (df, codes, reverse)
 
 
 def split_attributes(df):
@@ -64,7 +66,7 @@ def go():
     df = process.read_and_process_data()
     df = df.loc[:, KEEP_COLS]
     df2 = df.copy()
-    df2, d_map = encode_diagnoses(df, DIAGNOSIS_COL, DIAGNOSIS_CAT_COL)
+    df2, d_map, d_r = encode_diagnoses(df, DIAGNOSIS_COL, DIAGNOSIS_CAT_COL)
     df2 = pd.get_dummies(df2, columns=DUMMY_COLS, prefix=PREFIX_COLS)
 
     x, y = split_attributes(df2)

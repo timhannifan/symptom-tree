@@ -4,6 +4,12 @@ import get_ICD
 from sklearn.tree import DecisionTreeClassifier # Import Decision Tree Classifier
 from sklearn.model_selection import train_test_split # Import train_test_split function
 from sklearn import metrics #Import scikit-learn metrics module for accuracy calculation
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+
+from sklearn.metrics import confusion_matrix  
+from sklearn.metrics import accuracy_score
+
 
 
 REPLACEMENT_DICT = {'AGE': {"92 years or older": "92", "Under 1 year": "0"},
@@ -18,8 +24,15 @@ REPLACEMENT_DICT = {'AGE': {"92 years or older": "92", "Under 1 year": "0"},
                             "74": np.nan, "96": "ESC_Div_Remainder",
                             "97": "WSC_Div_Remainder"}}
 
-def read_and_process_data(csv_file):
+DIAGNOSIS_COL = 'DIAGNOSIS_SHORT_1'
+DIAGNOSIS_CAT_COL = DIAGNOSIS_COL + "_CAT"
+KEEP_COLS = ['VISIT_REASON_1', 'DIAGNOSIS_SHORT_1']
+DUMMY_COLS = [c for c in KEEP_COLS if c != DIAGNOSIS_COL]
+PREFIX_COLS = [s[:2] for s in DUMMY_COLS]
 
+
+
+def read_and_process_data(csv_file):
     col_names = ['AGE', 'AGE_CAT', 'SEX', 'PREGNANT', 'RACE_ETHNICITY',
                  'TOBACCO', 'INJURY', 'VISIT_REASON_1', 'VISIT_REASON_2',
                  'VISIT_REASON_3', 'VISIT_REASON_CAT', 'DIAGNOSIS_LONG_1',
@@ -30,8 +43,7 @@ def read_and_process_data(csv_file):
                  'DIABETES', 'HYPERLIPIDEMIA', 'HYPERTENSION', 
                  'ISCHEMIC_HEART_DIS', 'OBESITY', 'OSTEOPOROSIS', 
                  'NO_CONDITIONS', 'NUM_CONDITIONS', 'HEIGHT_INCHES', 
-                 'WEIGHT_POUNDS', 'TEMP_FAHRENHEIT', 'REGION', 'CENSUS_DIVISION',
-                 'STATE']
+                 'WEIGHT_POUNDS', 'TEMP_FAHRENHEIT', 'REGION', 'CENSUS_DIVISION','STATE']
 
     df = pd.read_csv(csv_file, header=0, names=col_names, dtype=str)
     
@@ -45,60 +57,48 @@ def read_and_process_data(csv_file):
 
     bad_injury = ["Yes"]
     df.query("INJURY not in @bad_injury", inplace=True)
-    
     df.fillna(np.nan, inplace=True)
     df.replace({"-9": np.nan, "Blank": np.nan}, inplace=True)
     df.replace(REPLACEMENT_DICT, inplace=True)
+    df = df.loc[:, KEEP_COLS]
 
-    col_list = ['AGE', 'SEX', 'RACE_ETHNICITY', 'VISIT_REASON_1', 'DIAGNOSIS_SHORT_1']
-    # df = df[col_list]
-    df = df.iloc[0:100,:] #Note, we will want to remove this
-
-    # df['DIAGNOSIS_LONG_1'] = df['DIAGNOSIS_LONG_1'].apply(lambda x: x.strip('-'))
-    # df['DIAGNOSIS_LONG_1'] = df['DIAGNOSIS_LONG_1'].apply(lambda x: get_ICD.translate_general(x))
+    # REMOVE BEFOFRE PRODUCTION
+    df = df.iloc[0:100,:] 
 
     df['DIAGNOSIS_SHORT_1'] = df['DIAGNOSIS_SHORT_1'].apply(lambda x: x.strip('-'))
     df['DIAGNOSIS_SHORT_1'] = df['DIAGNOSIS_SHORT_1'].apply(lambda x: get_ICD.translate_general(x))
 
     return df
 
+def test_pca(x_train, x_test):
+    sc = StandardScaler()
+    x_train = sc.fit_transform(x_train)
+    x_test = sc.transform(x_test)
+    pca = PCA()
+    x_train = pca.fit_transform(x_train)
+    x_test = pca.transform(x_test)
+    explained_variance = pca.explained_variance_ratio_
+    print(explained_variance)
 
-def num_unique(df):
 
-    return df.nunique().sort_values()
-
-
-def count_attribute(df, column, value):
-
-    return df[df[column] == value].count()
-
-
-
-#### James's Code ###
 def go(df): 
+    df2 = df.copy()
+    df2 = encode_diagnoses(df, DIAGNOSIS_COL, DIAGNOSIS_CAT_COL)
+    df2 = pd.get_dummies(df2, columns=DUMMY_COLS, prefix=PREFIX_COLS)
 
-    # lst = [('AGE', 'AGE_CODE'),
-    #     ('SEX', 'SEX_CODE'),
-    #     ('RACE_ETHNICITY', 'RACE_ETHNICITY_CODE'),
-    #     ('VISIT_REASON_1', 'VISIT_REASON_1_CODE'),
-    #     ('DIAGNOSIS_SHORT_1', 'DIAGNOSIS_SHORT_1_CODE')]
-
-    # for tup in lst:
-
-    #     target, new_col = tup
-    #     df = encode_diagnoses(df, target, new_col)
-
-    for col in df.columns:
-    
-        df = encode_diagnoses(df, col, col)
-        # df = encode_diagnoses(df, col, col + '_CODE')
-
-    x, y = split_attributes(df)
-
+    x, y = split_attributes(df2)
     x_train, x_test, y_train, y_test = split_data(x, y)
-
     trained = model(x_train, y_train)
+    y_pred = trained.predict(x_test)
 
+    test_pca(x_train, x_test)
+
+
+    cm = confusion_matrix(y_test, y_pred)  
+    print(cm)  
+    # print('CM Accuracy' + accuracy_score(y_test, y_pred))  
+
+    print("Accuracy:",metrics.accuracy_score(y_test, y_pred))
     return trained
 
 
@@ -116,11 +116,9 @@ def encode_diagnoses(df, target, new_col):
 
 
 def split_attributes(df):
-    #split dataset in features and target variable
-    
-    attributes = ['AGE_CODE', 'RACE_ETHNICITY_CODE', 'SEX_CODE', 'VISIT_REASON_1_CODE']
-    x = df[attributes] # Things to split on
-    y = df['DIAGNOSIS_SHORT_1_CODE'] # Target variable
+    x = df.drop([DIAGNOSIS_COL, DIAGNOSIS_CAT_COL], axis=1)
+    y = df.loc[:,DIAGNOSIS_CAT_COL]
+
     return x, y
 
 
@@ -132,83 +130,11 @@ def split_data(x, y):
 
 
 def model(x_train, y_train):
-
     obj = DecisionTreeClassifier()
     trained_model = obj.fit(x_train, y_train)
-    #prediction = trained_model.predict(x_test)
 
     return trained_model
 
-
-# Defined constants for column names
-'''
-AGE = 'AGE'
-AGE_CAT = 'AGER'
-SEX = 'SEX'
-PREGNANT = 'PREGNANT'
-RACE_ETHNICITY = 'RACERETH'
-TOBACCO = 'USETOBAC'
-INJURY = 'INJURY'
-VISIT_REASON_1 = 'RFV1'
-VISIT_REASON_2 = 'RFV2'
-VISIT_REASON_3 = 'RFV3'
-VISIT_REASON_CAT = 'MAJOR'
-DIAGNOSIS_LONG_1 = 'DIAG1'
-DIAGNOSIS_LONG_2 = 'DIAG2'
-DIAGNOSIS_LONG_3 = 'DIAG3'
-DIAGNOSIS_SHORT_1 = 'DIAG13D'
-DIAGNOSIS_SHORT_2 = 'DIAG23D'
-DIAGNOSIS_SHORT_3 = 'DIAG33D'
-ARTHRITIS = 'ARTHRTIS'
-ASTHMA = 'ASTHMA'
-CANCER = 'CANCER'
-CEREBROVASCULAR_DIS = 'CEBVD'
-COPD = 'COPD'
-CHRONIC_RENAL_FAIL = 'CRF'
-CONGESTIVE_HEART_FAIL = 'CHF'
-DEPRESSION = 'DEPRN'
-DIABETES = 'DIABETES'
-HYPERLIPIDEMIA = 'HYPLIPID'
-HYPERTENSION = 'HTN'
-ISCHEMIC_HEART_DIS = 'IHD'
-OBESITY = 'OBESITY'
-OSTEOPOROSIS = 'OSTPRSIS'
-NO_CONDITIONS = 'NOCHRON'
-NUM_CONDITIONS = 'TOTCHRON'
-HEIGHT_INCHES = 'HTIN'
-WEIGHT_POUNDS = 'WTLB'
-TEMP_FAHRENHEIT = 'TEMPF'
-REGION = 'REGIONOFF'
-CENSUS_DIVISION = 'DIVISIONOFF'
-STATE = 'FIPSSTOFF'
-'''
-
-
-
-
-
-
-
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# if __name__ == "__main__":
+    # df = read_and_process_data('data/cdc_2012_2016_clean.csv')
+    # return go(df)

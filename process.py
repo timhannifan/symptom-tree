@@ -43,7 +43,7 @@ BAD_INJURY = ["Yes"]
 BAD_SYMPTOMS = ["Blank", "visit", "medication", "counseling", "injury", "surgery"]
 VISIT_REASON_COL = 'VISIT_REASON_1'
 DIAGNOSIS_COL = 'DIAGNOSIS_SHORT_1'
-LONG_NAMES = ['VISIT_REASON_1', 'SYMP1','SYMP2','SYMP3','SYMP3', 'SYMP4']
+LONG_NAMES = ['VISIT_REASON_1', 'SYMP1','SYMP2','SYMP3', 'SYMP4']
 
 def get_diagnosis_map():
     '''
@@ -57,7 +57,7 @@ def get_diagnosis_map():
 
     return diagnoses
 
-def read_and_process_data():
+def read_and_process_data(filename):
     '''
     Reads the raw input csv data, performs cleaning, filling, and replacement
     tasks, exports a csv file of cleaned data, and returns the cleaned df
@@ -66,7 +66,7 @@ def read_and_process_data():
         Returns a dictionary matching ICD codes to long-form strings
     '''
 
-    df = pd.read_csv(INPUT_FNAME, header=0, names=COL_NAMES, dtype=str)
+    df = pd.read_csv(filename, header=0, names=COL_NAMES, dtype=str)
 
     df.query("DIAGNOSIS_LONG_1 not in @BAD_DIAGNOSES", inplace=True)
     df.query("DIAGNOSIS_SHORT_1 not in @BAD_DIAGNOSES", inplace=True)
@@ -88,7 +88,7 @@ def read_and_process_data():
     df[VISIT_REASON_COL] = df[VISIT_REASON_COL].str.lower()
     df[DIAGNOSIS_COL] = df[DIAGNOSIS_COL].str.lower()
 
-    # df.to_csv(OUTPUT_FNAME, index=False)
+    df.to_csv(OUTPUT_FNAME, index=False)
 
     return df
 
@@ -96,8 +96,10 @@ def read_and_process_data():
 def go_long(df):
 
     new = df[VISIT_REASON_COL].str.split(',', expand = True)
-    new_df = df[VISIT_REASON_COL].to_frame().join(new) 
-    new_df.columns = LONG_NAMES
+    new_df = df[VISIT_REASON_COL].to_frame().join(new)
+    col_names = ['SYMP' + str(i) for i in range(1,len(new_df.columns))]
+    long_names = [VISIT_REASON_COL] + col_names
+    new_df.columns = long_names
 
     keys = [c for c in new_df if c.startswith('SYMP')]
     melted_df = pd.melt(new_df, id_vars=VISIT_REASON_COL, value_vars=keys, value_name='KEY')

@@ -1,2 +1,2 @@
-# mayo-symptom-tree
-A Python decision tree built with Mayo Clinic's Symptom Checker data
+# symptom-tree
+Medical symptom/diagnosis decision tree built with Python's scikit-learn

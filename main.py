@@ -93,6 +93,21 @@ class SymptomTree:
         graph = graphviz.Source(dot_data) 
         graph.render(path_fname_prefix) 
 
+    def print_col_name(self, idx):
+        '''
+        Retrieves a column name given an X index
+        Inputs: 
+            idx: int
+        Outputs:
+            string column name or None
+        '''
+        cols = self.data.columns
+
+        try:
+            return cols[idx]
+        except:
+            return None
+
     @property
     def accuracy(self):
         score = accuracy_score(self.y_test, self.y_hat)

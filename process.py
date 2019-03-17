@@ -77,7 +77,6 @@ def read_and_process_data(filename):
     df.replace(REPLACEMENT_DICT, inplace=True)
 
     dm = get_diagnosis_map()
-    print(dm)
     df['DIAGNOSIS_SHORT_1'] = df['DIAGNOSIS_SHORT_1'].apply(
         lambda x: str(x).strip('-'))
     df['DIAGNOSIS_SHORT_1'] = df['DIAGNOSIS_SHORT_1'].apply(
@@ -110,5 +109,8 @@ def go_long(df):
     sorted_df.drop('variable', axis=1, inplace=True)
     sorted_df.dropna(inplace=True)
     sorted_df = sorted_df[~sorted_df['KEY'].str.contains('...', regex=False)]
+    sorted_df['KEY'] = sorted_df['KEY'].apply(
+        lambda x: str(x).strip())
+    sorted_df['KEY'] = sorted_df['KEY'].str.lower()
 
     return sorted_df

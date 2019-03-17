@@ -7,11 +7,12 @@ License: MIT
 
 import process
 import pca
-from sklearn.tree import DecisionTreeClassifier
+from sklearn import tree
 # from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
 import pandas as pd
 import pdutil
+import graphviz
 
 DIAGNOSIS_COL = 'DIAGNOSIS_SHORT_1'
 DIAGNOSIS_CAT_COL = DIAGNOSIS_COL + "_CAT"
@@ -22,7 +23,7 @@ PREFIX_COLS = [s[:2] for s in DUMMY_COLS]
 
 class SymptomTree:
     def __init__(self, data):
-        self.model = DecisionTreeClassifier()
+        self.model = tree.DecisionTreeClassifier()
         self.data = data[0]
         self.diagnosis_dict = data[1]
         self.rev_diagnosis_dict = data[2]
@@ -72,6 +73,18 @@ class SymptomTree:
             return code
         except:
             return None
+
+    def visualize(self, path_fname_prefix):
+        '''
+        Exports a pdf visualization of the tree
+        Inputs: 
+            path_fname_prefix: path and filename prefix
+        Outputs:
+            returns nothing. exports pdf to path_fname.pdf
+        '''
+        dot_data = tree.export_graphviz(self.model, out_file=None) 
+        graph = graphviz.Source(dot_data) 
+        graph.render(path_fname_prefix) 
 
     @property
     def accuracy(self):

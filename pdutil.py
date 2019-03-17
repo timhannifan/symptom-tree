@@ -1,11 +1,22 @@
 '''
 Pandas utility functions
 '''
+import process
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
 TEST_SIZE = 0.2
 RANDOM_STATE = 1
+
+
+def get_df_from_csv(path, keep_cols, d_col, d_cat_col, dummies, prefix_cols):
+    df = process.read_and_process_data(path)
+    df = df.loc[:, keep_cols]
+    df2 = df.copy()
+    df2, d_map, d_r = encode_df_with_dict(df2, d_col, d_cat_col)
+    df2 = pd.get_dummies(df2, columns=dummies, prefix=prefix_cols)
+
+    return (df2, d_map, d_r)
 
 
 def get_x_y_df(df, target_cols, target_string_col):
@@ -59,4 +70,3 @@ def encode_df_with_dict(df, target, new_col):
         df[new_col] = df[target].replace(codes)
 
     return (df, codes, reverse)
-    

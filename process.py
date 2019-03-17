@@ -7,7 +7,6 @@ import numpy as np
 import json
 
 DIAGNOSIS_PATH = "data/icd_codes.json"
-# INPUT_FNAME = 'data/d.csv'
 OUTPUT_FNAME = 'cleaned.csv'
 
 REPLACEMENT_DICT = {'AGE': {
@@ -56,6 +55,7 @@ def get_diagnosis_map():
 
     return diagnoses
 
+
 def read_and_process_data(filename):
     '''
     Reads the raw input csv data, performs cleaning, filling, and replacement
@@ -77,9 +77,11 @@ def read_and_process_data(filename):
     df.replace(REPLACEMENT_DICT, inplace=True)
 
     dm = get_diagnosis_map()
+    print(dm)
     df['DIAGNOSIS_SHORT_1'] = df['DIAGNOSIS_SHORT_1'].apply(
         lambda x: str(x).strip('-'))
-    df['DIAGNOSIS_SHORT_1'] = df['DIAGNOSIS_SHORT_1'].apply(lambda x: dm[x])
+    df['DIAGNOSIS_SHORT_1'] = df['DIAGNOSIS_SHORT_1'].apply(
+        lambda x: dm[x] if x in dm else '')
 
     sorted_df = go_long(df)
     df = pd.merge(df, sorted_df, on=VISIT_REASON_COL, how='left')
@@ -109,6 +111,4 @@ def go_long(df):
     sorted_df.dropna(inplace=True)
     sorted_df = sorted_df[~sorted_df['KEY'].str.contains('...', regex=False)]
 
-
     return sorted_df
-

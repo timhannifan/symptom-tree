@@ -1,6 +1,14 @@
+'''
+A syptom/diagnosis decision tree based on XXX data, built with sklearn.
+
+Authors: Tammy Glazer, Tim Hannifan, James Jensen (alpabetically)
+License: MIT
+'''
+
 import process
-import fp
+import pca
 from sklearn.tree import DecisionTreeClassifier
+# from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
 import pandas as pd
 import pdutil
@@ -20,20 +28,19 @@ class SymptomTree:
         self.rev_diagnosis_dict = data[2]
         self.x_train = None
         self.y_train = None
-        self.test_data_x = None
-        self.test_data_y = None
-        self.y_pred = None
+        self.x_test = None
+        self.y_test = None
+        self.y_hat = None
 
     def train(self, x_data, y_data):
-        self.x_train, self.test_data_x, \
-        self.y_train, self.test_data_y = pdutil.get_test_train(x_data, y_data)
-
+        self.x_train, self.x_test, \
+        self.y_train, self.y_test = pdutil.get_test_train(x_data, y_data)
         self.trained_model = self.model.fit(self.x_train, self.y_train)
 
     def predict(self, param):
-        # pass none to set testing data predictions
+        # pass none to use testing data
         if param is None:
-            self.y_pred = self.trained_model.predict(self.test_data_x)
+            self.y_hat = self.trained_model.predict(self.x_test)
             return None
         elif isinstance(param, str):
             pass
@@ -54,6 +61,10 @@ class SymptomTree:
         except:
             return None
 
+    def test_pca(self):
+        res = pca.test_pca(self.x_train, self.x_test)
+        print("PCA Results:", res)
+        return res
 
     def get_diagnosis_code(self, string):
         try:
@@ -64,7 +75,7 @@ class SymptomTree:
 
     @property
     def accuracy(self):
-        score = accuracy_score(self.test_data_y, self.y_pred)
+        score = accuracy_score(self.y_test, self.y_hat)
         print("Accuracy:", score)
         return score
 
@@ -73,23 +84,12 @@ class SymptomTree:
         return len(self.x_train.columns) - 1
 
 
-def get_data(path):
-    df = process.read_and_process_data(path)
-    df = df.loc[:, KEEP_COLS]
-    df2 = df.copy()
-    df2, d_map, d_r = pdutil.encode_df_with_dict(df2, DIAGNOSIS_COL, 
-        DIAGNOSIS_CAT_COL)
-    df2 = pd.get_dummies(df2, columns=DUMMY_COLS, prefix=PREFIX_COLS)
-
-    return (df2, d_map, d_r)
-
-
 def go(raw_path):
-    data = get_data(raw_path)
+    data = pdutil.get_df_from_csv(raw_path, KEEP_COLS, DIAGNOSIS_COL,DIAGNOSIS_CAT_COL, DUMMY_COLS, PREFIX_COLS)
     st = SymptomTree(data)
 
     x, y = pdutil.get_x_y_df(st.data, [DIAGNOSIS_COL, DIAGNOSIS_CAT_COL],
-        DIAGNOSIS_CAT_COL)
+                             DIAGNOSIS_CAT_COL)
 
     st.train(x, y)
     st.predict(None)

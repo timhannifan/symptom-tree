@@ -66,7 +66,10 @@ class SymptomTree:
         df.reset_index(inplace=True)
         df.columns = ['symptoms', 'yesno']
         row = df.pivot_table(values= 'yesno', columns='symptoms')
-        code = self.predict(row)[0]
+        code_array = self.predict(row)
+        code = code_array[0]
+
+        self.lookup = {key:0 for key,v in self.lookup.items()}
 
         return self.get_diagnosis_string(code)
 

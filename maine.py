@@ -48,13 +48,17 @@ class SymptomTree:
             return self.trained_model.predict(param)
 
 
-    def get_user_form(self): 
+    def get_user_form(self, flag=True):
+
 
         symptoms = self.x_train.iloc[0] # want to get first fow of x_train so that we have all potential symptoms in the model
         self.sym_list = list(symptoms.index)
         self.lookup = {key:0 for key in self.sym_list}
 
-        return self.sym_list
+        if flag:
+            return self.sym_list
+        else:
+            return None
 
 
     def predict_user_diagnosis(self, sym_list):
@@ -69,7 +73,7 @@ class SymptomTree:
         code_array = self.predict(row)
         code = code_array[0]
 
-        self.lookup = {key:0 for key,v in self.lookup.items()}
+        self.get_user_form(flag=False)
 
         return self.get_diagnosis_string(code)
 

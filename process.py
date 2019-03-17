@@ -8,7 +8,6 @@ import json
 
 DIAGNOSIS_PATH = "data/icd_codes.json"
 # INPUT_FNAME = 'data/d.csv'
-INPUT_FNAME = '/Users/jamesjensen/Documents/harris/q2_18_19/final_project/mayo-symptom-tree/cdc_2012_2016_clean.csv'
 OUTPUT_FNAME = 'cleaned.csv'
 
 REPLACEMENT_DICT = {'AGE': {

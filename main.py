@@ -36,9 +36,9 @@ class SymptomTree:
             self.y_pred = self.trained_model.predict(self.test_data_x)
             return None
         elif isinstance(param, str):
-
+            pass
         else:
-            return None
+            pass
 
     def get_diagnosis_string(self, code):
         try:

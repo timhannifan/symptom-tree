@@ -43,8 +43,15 @@ class SymptomTree:
         if param is None:
             self.y_hat = self.trained_model.predict(self.x_test)
             return None
-        elif isinstance(param, str):
-            pass
+        elif isinstance(param, list):
+            row = self.test_data_x.iloc[0]
+            row = row.to_frame()
+            row.loc[:] = 0 #this is a dataframe
+            #[sex= , age_category= ,race_ethnicity= , symptoms=[...]] 
+            row[sex]
+
+
+
         else:
             pass
 

@@ -64,6 +64,7 @@ class SymptomTree:
     def predict_user_diagnosis(self, sym_list):
 
         for sym in sym_list:
+            assert sym in self.lookup, "%r IS NOT A VALID SYMPTOM" % sym 
             self.lookup[sym] = 1
 
         df = pd.DataFrame.from_dict(self.lookup, orient="index")

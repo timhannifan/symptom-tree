@@ -35,6 +35,8 @@ class SymptomTree:
         if param is None:
             self.y_pred = self.trained_model.predict(self.test_data_x)
             return None
+        elif isinstance(param, str):
+            pass
         else:
             pass
 
@@ -62,6 +64,7 @@ class SymptomTree:
     def predictor_set_size(self):
         return len(self.x_train.columns) - 1
 
+
 def get_data(path):
     # need to add param to fp
     df = process.read_and_process_data(path)
@@ -79,7 +82,7 @@ def go(raw_path):
     st.data, st.diagnosis_dict, st.rev_diagnosis_dict = get_data(raw_path)
     x, y = fp.split_attributes(st.data)
 
-    st.train(x,y)
+    st.train(x, y)
     st.predict(None)
 
     return st

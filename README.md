@@ -38,7 +38,7 @@ the ICD-codes and diagnoses as well as write the dictionary to a JSON file.
 
 Step 2) To initialize the Tree, run the following in ipython3:
 
-In [100]: tree = main.go(‘cdc_2012_2016_clean.csv’)
+In [100]: tree = symptomtree.buildtree(‘cdc_2012_2016_clean.csv’)
 
 This function reads and processes the data from the cdc_2012_2016_clean.csv,
 and initializes the SymptomTree class using this processed data. This class

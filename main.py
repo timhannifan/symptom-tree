@@ -4,20 +4,16 @@ A syptom/diagnosis decision tree based on XXX data, built with sklearn.
 Authors: Tammy Glazer, Tim Hannifan, James Jensen (alpabetically)
 License: MIT
 '''
-
-import process
-import pca
+import graphviz
 from sklearn import tree
-# from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
 import pandas as pd
 import pdutil
-import graphviz
-
+import pca
 
 DIAGNOSIS_COL = 'DIAGNOSIS_SHORT_1'
 DIAGNOSIS_CAT_COL = DIAGNOSIS_COL + "_CAT"
-KEEP_COLS = ['KEY', 'SEX','AGE_CAT', 'RACE_ETHNICITY', 'DIAGNOSIS_SHORT_1']
+KEEP_COLS = ['KEY', 'SEX', 'AGE_CAT', 'RACE_ETHNICITY', 'DIAGNOSIS_SHORT_1']
 DUMMY_COLS = [c for c in KEEP_COLS if c != DIAGNOSIS_COL]
 PREFIX_COLS = [s[:2] for s in DUMMY_COLS]
 
@@ -28,6 +24,7 @@ class SymptomTree:
     '''
     def __init__(self, data):
         self.model = tree.DecisionTreeClassifier()
+        self.trained_model = None
         self.data = data[0]
         self.diagnosis_dict = data[1]
         self.rev_diagnosis_dict = data[2]
@@ -37,6 +34,7 @@ class SymptomTree:
         self.y_test = None
         self.y_hat = None
         self.lookup = None
+        self.sym_list = []
 
     def train(self, x_data, y_data):
         '''
@@ -53,16 +51,25 @@ class SymptomTree:
         self.y_train, self.y_test = pdutil.get_test_train(x_data, y_data)
         self.trained_model = self.model.fit(self.x_train, self.y_train)
 
-    def predict(self, param):
-        # pass none to use testing data
+    def predict(self, param=None):
+        '''
+        Runs a prediciton on the trained model, either from the testing data
+        or from a df with similar dimensions to the x_train data
+
+        Input:
+            param: either None to use the testing data, or a pandas df
+            with the same cols as x_train and a single row of values
+        Output:
+            either None, if no param provided, or an int corresponding
+            to the diagnosis
+        '''
         if param is None:
             self.y_hat = self.trained_model.predict(self.x_test)
             return None
-
-        elif isinstance(param, pd.DataFrame):
-            
+        if isinstance(param, pd.DataFrame):
             return self.trained_model.predict(param)
 
+        return None
     def get_user_form(self, flag=True):
         '''
         Returns a list of potential symptoms for the end user to choose from
@@ -74,22 +81,22 @@ class SymptomTree:
             to choose from
         '''
 
-        symptoms = self.x_train.iloc[0] 
+        symptoms = self.x_train.iloc[0]
         self.sym_list = list(symptoms.index)
         self.lookup = {key:0 for key in self.sym_list}
 
         if flag:
             return self.sym_list
-        else:
-            return None
+
+        return None
 
 
     def predict_user_diagnosis(self, sym_list):
         '''
         Predicts a diagnosis given a list of symptoms, informs the user if
         they've entered an invalid symptom and resets the base
-        dictionary of symptoms after each prediction
-        
+        dictionary of symptoms after each prediction.
+
         Inputs:
             sym_list (list): A list of symptoms
 
@@ -105,10 +112,10 @@ class SymptomTree:
             else:
                 print("%s is not a valid symptom" % sym)
 
-        df = pd.DataFrame.from_dict(self.lookup, orient="index")
-        df.reset_index(inplace=True)
-        df.columns = ['symptoms', 'yesno']
-        row = df.pivot_table(values= 'yesno', columns='symptoms')
+        dataframe = pd.DataFrame.from_dict(self.lookup, orient="index")
+        dataframe.reset_index(inplace=True)
+        dataframe.columns = ['symptoms', 'yesno']
+        row = dataframe.pivot_table(values='yesno', columns='symptoms')
         code_array = self.predict(row)
         self.get_user_form(flag=False)
 
@@ -161,19 +168,19 @@ class SymptomTree:
     def visualize(self, path_fname_prefix):
         '''
         Exports a pdf visualization of the tree
-        Inputs: 
+        Inputs:
             path_fname_prefix: path and filename prefix
         Outputs:
             returns nothing. exports pdf to path_fname.pdf
         '''
-        dot_data = tree.export_graphviz(self.model, out_file=None) 
-        graph = graphviz.Source(dot_data) 
-        graph.render(path_fname_prefix) 
+        dot_data = tree.export_graphviz(self.model, out_file=None)
+        graph = graphviz.Source(dot_data)
+        graph.render(path_fname_prefix)
 
     def print_col_name(self, idx):
         '''
         Retrieves a column name given an X index
-        Inputs: 
+        Inputs:
             idx: int
         Outputs:
             string column name or None
@@ -206,7 +213,7 @@ class SymptomTree:
         return len(self.x_train.columns) - 1
 
 
-def go(raw_path):
+def buildtree(raw_path):
     '''
     Main call to read data, create and train SymptomTree
 
@@ -218,18 +225,20 @@ def go(raw_path):
     '''
     pd.options.mode.chained_assignment = None
 
-    data = pdutil.get_df_from_csv(raw_path, KEEP_COLS, DIAGNOSIS_COL,DIAGNOSIS_CAT_COL, DUMMY_COLS, PREFIX_COLS)
-    st = SymptomTree(data)
+    data = pdutil.get_df_from_csv(raw_path, KEEP_COLS, DIAGNOSIS_COL,
+                                  DIAGNOSIS_CAT_COL, DUMMY_COLS, PREFIX_COLS)
+    symptom_tree = SymptomTree(data)
 
-    x, y = pdutil.get_x_y_df(st.data, [DIAGNOSIS_COL, DIAGNOSIS_CAT_COL],
-                             DIAGNOSIS_CAT_COL)
+    x_train, y_train = pdutil.get_x_y_df( \
+        symptom_tree.data, [DIAGNOSIS_COL, DIAGNOSIS_CAT_COL],
+        DIAGNOSIS_CAT_COL)
 
-    st.train(x, y)
-    st.predict(None)
+    symptom_tree.train(x_train, y_train)
+    symptom_tree.predict(None)
 
-    return st
+    return symptom_tree
 
 
 if __name__ == "__main__":
-    path = 'data/d_small.csv'
-    go(path)
+    PATH = 'data/symptom-tree-data.csv.csv'
+    buildtree(PATH)

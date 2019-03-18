@@ -79,8 +79,10 @@ class SymptomTree:
             self.get_user_form()
 
         for sym in sym_list:
-            assert sym in self.lookup, "%r IS NOT A VALID SYMPTOM" % sym 
-            self.lookup[sym] = 1
+            if sym in self.lookup:
+                self.lookup[sym] = 1
+            else:
+                print("%s is not a valid symptom" % sym)
 
         df = pd.DataFrame.from_dict(self.lookup, orient="index")
         df.reset_index(inplace=True)

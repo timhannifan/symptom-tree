@@ -29,14 +29,9 @@ Graphviz v0.10.1
 Urllib v3.7.3rc1
 Requests v2.21.0
 
-# How to Use:
-Step 1) To create JSON file with ICD-codes and their corresponding
-diagnoses, first create a cleaned dataframe by calling read_and_process_data()
-in process.py, passing in the csv filename. Then call make_dictionary() in
-icd.py, passing in the cleaned dataframe. This will return a dictionary of
-the ICD-codes and diagnoses as well as write the dictionary to a JSON file. 
+# How to Use: 
 
-Step 2) To initialize the Tree, run the following in ipython3:
+Step 1) To initialize the Tree, run the following in ipython3:
 
 In [100]: tree = main.go(‘cdc_2012_2016_clean.csv’)
 
@@ -49,22 +44,29 @@ strings (rev_diagnosis_dict), the x training dataset (x_train), the y training
 dataset (y_train), the x testing dataset (x_test), the y testing dataset
 (y_test), predicted diagnoses (y_hat), and a lookup attribute.
 
-Step 3) Once the model is built, run the following method to construct a user
+Step 2) Once the model is built, run the following method to construct a user
 form, which represents the exact demographic and symptom text that can
 be passed into the predict_user_diagnosis method given the training data:
 
 In [101]: tree.get_user_form()
 
-Step 4) To obtain a prediction for a given set of demographic characteristics
+Step 3) To obtain a prediction for a given set of demographic characteristics
 and symptoms, run the following, entering a list of symptoms and/or 
 demographic characteristics matching the options from the user_form EXACTLY:
 
 In [102]: symptoms = [‘example_age’, ‘example_symptom’, ‘example_symptom’]
 In [103]: tree.predict_user_diagnosis(symptoms)
 
-Note: this step will only work if the symptoms/demographics are spelled
+NOTE: this step will only work if the symptoms/demographics are spelled
 exactly as they appear in the user_form, including any prefixes
 (ie. ‘KE_arm pain’)
+
+NOTE: already completed to prepare JSON for use
+To create JSON file with ICD-codes and their corresponding
+diagnoses, create a cleaned dataframe by calling read_and_process_data()
+in process.py, passing in the csv filename. Then call make_dictionary() in
+icd.py, passing in the cleaned dataframe. This will as write the
+dictionary to a JSON file.
 
 # Data Sources:
 The National Ambulatory Medical Care Survey (NAMCS) is a national survey

@@ -11,19 +11,21 @@ BAD_DIAGNOSES = ["V990", "V991", "V992", "V997", "-9", "V99","V97"]
 
 def translate_general(code):
     '''
-    DOC STRING NEEDED 
+    Given an IDC-code, scrapes www.icd10data.com and returns a meaningful
+    translation as a string
 
     Input:
-        NEEDED
+        code (int): an IDC-code
     Output:
-        NEEDED
+        rv (string): translation of the IDC-code
     '''
     url = BASE_GEN + str(code) + '&codebook=icd9volume1'
     ro = util.get_request(url)
     html = util.read_request(ro)
     soup = bs4.BeautifulSoup(html, "html5lib")
     rv = None
-    search = soup.find('div').next_sibling.next_sibling.find('div', class_='searchPadded')
+    search = soup.find('div').next_sibling.next_sibling.find('div',
+        class_='searchPadded')
 
     if search and search.text:
         rv = search.text
@@ -32,12 +34,13 @@ def translate_general(code):
 
 def make_dictionary(df):
     '''
-    DOC STRING NEEDED 
+    Returns a dictionary with ICD-codes and their translations as
+    key-value pairs.  
 
     Input:
-        NEEDED
+        df (dataframe): a dataframe with column of ICD-codes
     Output:
-        NEEDED
+        icd_dictionary (dict): dictionary with code, translation pairs
     '''
     icd_dictionary = {}
     df.query("DIAGNOSIS_SHORT_1 not in @BAD_DIAGNOSES", inplace=True)

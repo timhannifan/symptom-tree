@@ -36,6 +36,7 @@ class SymptomTree:
         self.lookup = None
         self.sym_list = []
 
+
     def train(self, x_data, y_data):
         '''
         Trains the internal model using a set of x and y testing data
@@ -50,6 +51,7 @@ class SymptomTree:
         self.x_train, self.x_test, \
         self.y_train, self.y_test = pdutil.get_test_train(x_data, y_data)
         self.trained_model = self.model.fit(self.x_train, self.y_train)
+
 
     def predict(self, param=None):
         '''
@@ -70,6 +72,8 @@ class SymptomTree:
             return self.trained_model.predict(param)
 
         return None
+
+
     def get_user_form(self, flag=True):
         '''
         Returns a list of potential symptoms for the end user to choose from
@@ -121,6 +125,7 @@ class SymptomTree:
 
         return self.get_diagnosis_string(code_array[0])
 
+
     def test_pca(self):
         '''
         Calls the pca module function test_pca to report explained variance
@@ -132,6 +137,7 @@ class SymptomTree:
             Returns explained_variance matrix
         '''
         return pca.test_pca(self.x_train, self.x_test)
+
 
     def get_diagnosis_string(self, code):
         '''
@@ -149,6 +155,7 @@ class SymptomTree:
         except:
             return None
 
+
     def get_diagnosis_code(self, string):
         '''
         Fetches a unique internal diagnosis code from the processed data
@@ -165,6 +172,7 @@ class SymptomTree:
         except:
             return None
 
+
     def visualize(self, path_fname_prefix):
         '''
         Exports a pdf visualization of the tree
@@ -176,6 +184,7 @@ class SymptomTree:
         dot_data = tree.export_graphviz(self.model, out_file=None)
         graph = graphviz.Source(dot_data)
         graph.render(path_fname_prefix)
+
 
     def print_col_name(self, idx):
         '''
@@ -192,6 +201,7 @@ class SymptomTree:
         except:
             return None
 
+
     @property
     def accuracy(self):
         '''
@@ -201,6 +211,7 @@ class SymptomTree:
             Returns the trained SymptomTree class object
         '''
         return accuracy_score(self.y_test, self.y_hat)
+
 
     @property
     def predictor_set_size(self):

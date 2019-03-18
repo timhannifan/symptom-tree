@@ -64,7 +64,17 @@ class SymptomTree:
             return self.trained_model.predict(param)
 
     def get_user_form(self, flag=True):
-        symptoms = self.x_train.iloc[0] # want to get first fow of x_train so that we have all potential symptoms in the model
+        '''
+        Returns a list of potential symptoms for the end user to choose from
+        and initializes the base symptom dictionary. Resets the base symptom
+        dictionary when called after making a prediction.
+
+        Output:
+            sym_list (list): List of all possible symptoms for end user
+            to choose from
+        '''
+
+        symptoms = self.x_train.iloc[0] 
         self.sym_list = list(symptoms.index)
         self.lookup = {key:0 for key in self.sym_list}
 
@@ -75,6 +85,17 @@ class SymptomTree:
 
 
     def predict_user_diagnosis(self, sym_list):
+        '''
+        Predicts a diagnosis given a list of symptoms, informs the user if
+        they've entered an invalid symptom and resets the base
+        dictionary of symptoms after each prediction
+        
+        Inputs:
+            sym_list (list): A list of symptoms
+
+        Output
+            diagnosis (str): A string that represents the predicted diagnosis
+        '''
         if self.lookup is None:
             self.get_user_form()
 

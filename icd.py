@@ -3,11 +3,11 @@ Scrapes ICD code data from website, creates a dicitonary of code to long
 form string, exports dictionary to json file.
 '''
 
-import util 
+import util
 import bs4
 
 BASE_GEN = 'https://www.icd10data.com/search?s='
-BAD_DIAGNOSES = ["V990", "V991", "V992", "V997", "-9", "V99","V97"]
+BAD_DIAGNOSES = ["V990", "V991", "V992", "V997", "-9", "V99", "V97"]
 
 def translate_general(code):
     '''
@@ -35,7 +35,6 @@ def translate_general(code):
 def make_dictionary(df):
     '''
     Returns a dictionary with ICD-codes and their translations as
-    key-value pairs. Writes the dictionary to a json file. 
 
     Input:
         df (dataframe): a dataframe with column of ICD-codes

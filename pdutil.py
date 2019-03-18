@@ -15,7 +15,7 @@ def get_df_from_csv(path, keep_cols, d_col, d_cat_col, dummies, prefix_cols):
     numerically. Uses one-hot-encoding to transform symptoms and demographic
     characteristics into dummy variables. Returns the updated dataframe,
     a dictionary of diagnosis codes mapped to diagnosis strings, and
-    a dictionary containing the same information with values as keys (reverse).
+    a dictionary containing the same information with values as keys.
 
     Inputs:
         path (str): csv file
@@ -27,7 +27,7 @@ def get_df_from_csv(path, keep_cols, d_col, d_cat_col, dummies, prefix_cols):
 
     Outputs:
         df2 (dataframe): updated dataframe
-        d_map (dict): dictionary mapping diagnosis strings to a unique index 
+        d_map (dict): dictionary mapping diagnosis strings to a unique index
         d_r (dict): dictionary mapping unique numbers to diagnosis strings
     '''
     df = process.read_and_process_data(path)
@@ -58,7 +58,7 @@ def get_x_y_df(df, target_cols, target_encode_col):
 
 def get_test_train(x, y):
     '''
-    Splits data using scikit test_train 
+    Splits data using scikit test_train
 
     Input:
         x: pandas df of predictor data
@@ -86,10 +86,9 @@ def encode_df_with_dict(df, target, new_col):
         new_col (str): new column name
     Output:
         df (df): dataframe
-        codes (dict): dictionary mapping diagnosis strings to a unique index 
+        codes (dict): dictionary mapping diagnosis strings to a unique index
         reverse (dict): dictionary mapping unique numbers to diagnosis strings
     '''
-
     targets = df[target].unique()
     codes = {}
     reverse = {}

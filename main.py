@@ -14,6 +14,7 @@ import pandas as pd
 import pdutil
 import graphviz
 
+
 DIAGNOSIS_COL = 'DIAGNOSIS_SHORT_1'
 DIAGNOSIS_CAT_COL = DIAGNOSIS_COL + "_CAT"
 KEEP_COLS = ['KEY', 'SEX','AGE_CAT', 'RACE_ETHNICITY', 'DIAGNOSIS_SHORT_1']
@@ -22,6 +23,9 @@ PREFIX_COLS = [s[:2] for s in DUMMY_COLS]
 
 
 class SymptomTree:
+    '''
+    Class for representing the symptom/diagnosis decision tree
+    '''
     def __init__(self, data):
         self.model = tree.DecisionTreeClassifier()
         self.data = data[0]
@@ -32,9 +36,19 @@ class SymptomTree:
         self.x_test = None
         self.y_test = None
         self.y_hat = None
-        self.loookup = None
+        self.lookup = None
 
     def train(self, x_data, y_data):
+        '''
+        Trains the internal model using a set of x and y testing data
+
+        Input:
+            x_data (df): predictor variable data
+            y_data (df): dependent variable data
+
+        Output:
+            Returns nothing
+        '''
         self.x_train, self.x_test, \
         self.y_train, self.y_test = pdutil.get_test_train(x_data, y_data)
         self.trained_model = self.model.fit(self.x_train, self.y_train)
@@ -77,7 +91,28 @@ class SymptomTree:
 
         return self.get_diagnosis_string(code_array[0])
 
+    def test_pca(self):
+        '''
+        Calls the pca module function test_pca to report explained variance
+
+        Input:
+            none
+
+        Output:
+            Returns explained_variance matrix
+        '''
+        return pca.test_pca(self.x_train, self.x_test)
+
     def get_diagnosis_string(self, code):
+        '''
+        Fetches a diagnosis string given a unique diagnosis code
+
+        Input:
+            code (int): diagnosis unique identifier
+
+        Output:
+            diagnosis string (str)
+        '''
         try:
             diagnosis = self.rev_diagnosis_dict[code]
             return diagnosis
@@ -85,18 +120,15 @@ class SymptomTree:
             return None
 
     def get_diagnosis_code(self, string):
-        try:
-            code = self.diagnosis_dict[string]
-            return code
-        except:
-            return None
+        '''
+        Fetches a unique internal diagnosis code from the processed data
 
-    def test_pca(self):
-        res = pca.test_pca(self.x_train, self.x_test)
-        print("PCA Results:", res)
-        return res
+        Input:
+            string (str): diagnosis string
 
-    def get_diagnosis_code(self, string):
+        Output:
+            diagnosis code (int)
+        '''
         try:
             code = self.diagnosis_dict[string]
             return code
@@ -132,16 +164,37 @@ class SymptomTree:
 
     @property
     def accuracy(self):
-        score = accuracy_score(self.y_test, self.y_hat)
-        print("Accuracy:", score)
-        return score
+        '''
+        Reports the accuracy of the trained model using testing data
+
+        Output:
+            Returns the trained SymptomTree class object
+        '''
+        return accuracy_score(self.y_test, self.y_hat)
 
     @property
     def predictor_set_size(self):
+        '''
+        Reports size of the predictor variable set
+
+        Output:
+            Returns the trained SymptomTree class object
+        '''
         return len(self.x_train.columns) - 1
 
 
 def go(raw_path):
+    '''
+    Main call to read data, create and train SymptomTree
+
+    Input:
+        raw_path (str): path of raw data csv
+
+    Output:
+        Returns the trained SymptomTree class object
+    '''
+    pd.options.mode.chained_assignment = None
+
     data = pdutil.get_df_from_csv(raw_path, KEEP_COLS, DIAGNOSIS_COL,DIAGNOSIS_CAT_COL, DUMMY_COLS, PREFIX_COLS)
     st = SymptomTree(data)
 

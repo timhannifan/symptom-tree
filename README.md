@@ -30,7 +30,12 @@ Urllib v3.7.3rc1
 Requests v2.21.0
 
 # How to Use:
-Step 1) EXPLAIN WHAT THEY NEED TO RUN TO INITIALIZE ICD SCRAPER
+Step 1) To create JSON file with ICD-codes and their corresponding
+diagnoses, first create a cleaned dataframe by calling read_and_process_data()
+in process.py, passing in the csv filename. Then call make_dictionary() in
+icd.py, passing in the cleaned dataframe. This will return a dictionary of
+the ICD-codes and diagnoses as well as write the dictionary to a JSON file. 
+
 Step 2) To initialize the Tree, run the following in ipython3:
 
 In [100]: tree = main.go(‘cdc_2012_2016_clean.csv’)

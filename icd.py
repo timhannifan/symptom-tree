@@ -35,7 +35,7 @@ def translate_general(code):
 def make_dictionary(df):
     '''
     Returns a dictionary with ICD-codes and their translations as
-    key-value pairs.  
+    key-value pairs. Writes the dictionary to a json file. 
 
     Input:
         df (dataframe): a dataframe with column of ICD-codes
@@ -52,5 +52,8 @@ def make_dictionary(df):
         if code:
             if code not in icd_dictionary.keys():
                 icd_dictionary[code] = translate_general(code)
+
+    with open('data/icd_codes.json', 'w') as fp: 
+        json.dump(icd_dictionary, fp, sort_keys=True, indent=4) 
 
     return icd_dictionary

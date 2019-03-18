@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 import json
 
-DIAGNOSIS_PATH = "data/icd_codes.json"
+DIAGNOSIS_PATH = 'data/icd_codes.json'
 OUTPUT_FNAME = 'cleaned.csv'
 
 COL_NAMES = ['AGE', 'AGE_CAT', 'SEX', 'PREGNANT', 'RACE_ETHNICITY',
@@ -62,6 +62,9 @@ def read_and_process_data(filename):
     Reads the raw input csv data, performs cleaning, filling, and replacement
     tasks, exports a csv file of cleaned data, and returns the cleaned df
 
+    Input:
+        filename (str): csv to be processed
+
     Output:
         Returns a dictionary matching ICD codes to long-form strings
     '''
@@ -77,15 +80,15 @@ def read_and_process_data(filename):
     df.replace(REPLACEMENT_DICT, inplace=True)
 
     dm = get_diagnosis_map()
-    df['DIAGNOSIS_SHORT_1'] = df['DIAGNOSIS_SHORT_1'].apply(
+    df.loc[:,'DIAGNOSIS_SHORT_1'] = df['DIAGNOSIS_SHORT_1'].apply(
         lambda x: str(x).strip('-'))
-    df['DIAGNOSIS_SHORT_1'] = df['DIAGNOSIS_SHORT_1'].apply(
+    df.loc[:,'DIAGNOSIS_SHORT_1'] = df['DIAGNOSIS_SHORT_1'].apply(
         lambda x: dm[x] if x in dm else '')
 
     sorted_df = go_long(df)
     df = pd.merge(df, sorted_df, on=VISIT_REASON_COL, how='left')
-    df[VISIT_REASON_COL] = df[VISIT_REASON_COL].str.lower()
-    df[DIAGNOSIS_COL] = df[DIAGNOSIS_COL].str.lower()
+    df.loc[:, VISIT_REASON_COL] = df[VISIT_REASON_COL].str.lower()
+    df.loc[:, DIAGNOSIS_COL] = df[DIAGNOSIS_COL].str.lower()
 
     df.to_csv(OUTPUT_FNAME, index=False)
 
@@ -123,8 +126,8 @@ def go_long(df):
     sorted_df.drop('variable', axis=1, inplace=True)
     sorted_df.dropna(inplace=True)
     sorted_df = sorted_df[~sorted_df['KEY'].str.contains('...', regex=False)]
-    sorted_df['KEY'] = sorted_df['KEY'].apply(
+    sorted_df.loc[:, 'KEY'] = sorted_df['KEY'].apply(
         lambda x: str(x).strip())
-    sorted_df['KEY'] = sorted_df['KEY'].str.lower()
+    sorted_df.loc[:, 'KEY'] = sorted_df['KEY'].str.lower()
 
     return sorted_df

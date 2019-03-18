@@ -1,5 +1,6 @@
 """
-Utility code
+Utility code taken from:
+https://classes.cs.uchicago.edu/archive/2019/winter/30122-1/pa/pa4/index.html
 """
 import urllib.parse
 import requests

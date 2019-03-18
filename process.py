@@ -92,7 +92,22 @@ def read_and_process_data(filename):
     return df
 
 
-def go_long(df): # Needs docstring
+def go_long(df):
+    '''
+    Splits the symptom string into individual words, expands the
+    dataframe so that each word in a symptom string is its own column, and
+    finally, unpivots the dataframe from wide format to long format so
+    that we have two columns: (1) the full symtom string (2)a word that was
+    in the corresponding symptom string. This is necessary so that we can
+    hotcode every possible symptom. 
+
+    Input:
+        A dataframe
+
+    Output:
+        The long dataframe with two columns: the symptom string and each
+        symptom found in the string
+    '''
 
     new = df[VISIT_REASON_COL].str.split(',', expand=True)
     new_df = df[VISIT_REASON_COL].to_frame().join(new)

@@ -32,6 +32,7 @@ class SymptomTree:
         self.x_test = None
         self.y_test = None
         self.y_hat = None
+        self.loookup = None
 
     def train(self, x_data, y_data):
         self.x_train, self.x_test, \
@@ -43,17 +44,38 @@ class SymptomTree:
         if param is None:
             self.y_hat = self.trained_model.predict(self.x_test)
             return None
-        elif isinstance(param, list):
-            row = self.test_data_x.iloc[0]
-            row = row.to_frame()
-            row.loc[:] = 0 #this is a dataframe
-            #[sex= , age_category= ,race_ethnicity= , symptoms=[...]] 
-            row[sex]
 
+        elif isinstance(param, pd.DataFrame):
+            
+            return self.trained_model.predict(param)
 
+    def get_user_form(self, flag=True):
+        symptoms = self.x_train.iloc[0] # want to get first fow of x_train so that we have all potential symptoms in the model
+        self.sym_list = list(symptoms.index)
+        self.lookup = {key:0 for key in self.sym_list}
 
+        if flag:
+            return self.sym_list
         else:
-            pass
+            return None
+
+
+    def predict_user_diagnosis(self, sym_list):
+        if self.lookup is None:
+            self.get_user_form()
+
+        for sym in sym_list:
+            assert sym in self.lookup, "%r IS NOT A VALID SYMPTOM" % sym 
+            self.lookup[sym] = 1
+
+        df = pd.DataFrame.from_dict(self.lookup, orient="index")
+        df.reset_index(inplace=True)
+        df.columns = ['symptoms', 'yesno']
+        row = df.pivot_table(values= 'yesno', columns='symptoms')
+        code_array = self.predict(row)
+        self.get_user_form(flag=False)
+
+        return self.get_diagnosis_string(code_array[0])
 
     def get_diagnosis_string(self, code):
         try:

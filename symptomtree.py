@@ -251,5 +251,5 @@ def buildtree(raw_path):
 
 
 if __name__ == "__main__":
-    PATH = 'data/symptom-tree-data.csv.csv'
+    PATH = 'data/symptom-tree-data.csv'
     buildtree(PATH)
